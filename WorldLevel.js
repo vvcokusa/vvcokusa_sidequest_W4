@@ -26,16 +26,51 @@ class WorldLevel {
     this.platforms = (levelJson.platforms ?? []).map(
       (p) => new Platform(p.x, p.y, p.w, p.h),
     );
+
+    // Color balls — generated with a for loop, evenly spaced across the world
+    this.balls = [];
+    if (levelJson.colorBalls) {
+      const cfg = levelJson.colorBalls;
+      const colors = cfg.colors;
+      const ballR = cfg.r ?? 14;
+      const floatY = cfg.floatY ?? 380;
+
+      for (let i = 0; i < colors.length; i++) {
+        // Space balls evenly: divide world width into (count + 1) slots
+        const bx = (this.w / (colors.length + 1)) * (i + 1);
+        this.balls.push({
+          x: bx,
+          y: floatY,
+          r: ballR,
+          col: colors[i],
+          collected: false,
+        });
+      }
+    }
   }
 
-drawWorld() {
-  background(this.theme.bg);
-  push();
-  rectMode(CORNER);          // critical: undo any global rectMode(CENTER) [web:230]
-  noStroke();
-  fill(this.theme.platform);
+  drawBalls(t) {
+    noStroke();
+    for (const b of this.balls) {
+      if (b.collected) continue;
+      // gentle up-and-down float using sine and the sketch time
+      const floatOffset = sin(t * 2 + b.x * 0.01) * 6;
+      fill(b.col);
+      circle(b.x, b.y + floatOffset, b.r * 2);
+      // white shine dot
+      fill(255, 255, 255, 160);
+      circle(b.x - b.r * 0.3, b.y + floatOffset - b.r * 0.3, b.r * 0.6);
+    }
+  }
 
-  for (const p of this.platforms) rect(p.x, p.y, p.w, p.h); // x,y = top-left [web:234]
-  pop();
-}
+  drawWorld() {
+    background(this.theme.bg);
+    push();
+    rectMode(CORNER); // critical: undo any global rectMode(CENTER) [web:230]
+    noStroke();
+    fill(this.theme.platform);
+
+    for (const p of this.platforms) rect(p.x, p.y, p.w, p.h); // x,y = top-left [web:234]
+    pop();
+  }
 }

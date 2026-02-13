@@ -25,6 +25,7 @@ let levelIndex = 0;
 let level;
 let player;
 let cam;
+let playerColor; // tracks current blob colour, changes on ball pickup
 
 function preload() {
   allLevelsData = loadJSON("levels.json"); // levels.json beside index.html [web:122]
@@ -44,6 +45,7 @@ function loadLevel(i) {
 
   player = new BlobPlayer();
   player.spawnFromLevel(level);
+  playerColor = level.theme.blob; // reset colour to level default on (re)load
 
   cam.x = player.x - width / 2;
   cam.y = 0;
@@ -54,7 +56,7 @@ function draw() {
   // --- game state ---
   player.update(level);
 
-  // Fall death → respawn
+  // Fall death â†’ respawn
   if (player.y - player.r > level.deathY) {
     loadLevel(levelIndex);
     return;
@@ -68,29 +70,28 @@ function draw() {
   // --- draw ---
   cam.begin();
   level.drawWorld();
-  player.draw(level.theme.blob);
+  level.drawBalls(frameCount * 0.05); // pass time for floating animation
+
+  // Check if player touched any uncollected ball
+  for (const b of level.balls) {
+    if (!b.collected) {
+      const d = dist(player.x, player.y, b.x, b.y);
+      if (d < player.r + b.r) {
+        b.collected = true; // remove ball from world
+        playerColor = b.col; // change blob to ball's colour
+      }
+    }
+  }
+
+  player.draw(playerColor);
   cam.end();
 
   // HUD
   fill(0);
   noStroke();
-  text(level.name + " (Example 5)", 10, 18);
-  text("A/D or ←/→ move • Space/W/↑ jump • Fall = respawn", 10, 36);
-  text("camLerp(JSON): " + level.camLerp + "  world.w: " + level.w, 10, 54);
-  text("cam: " + cam.x + ", " + cam.y, 10, 90);
-  const p0 = level.platforms[0];
-  text(`p0: x=${p0.x} y=${p0.y} w=${p0.w} h=${p0.h}`, 10, 108);
-
-  text(
-    "platforms: " +
-      level.platforms.length +
-      " start: " +
-      level.start.x +
-      "," +
-      level.start.y,
-    10,
-    72,
-  );
+  text(level.name, 10, 18);
+  text(" you can use (ADWS) keys or (arrows/space) to move the blob.", 10, 36);
+  text(`(N) will take you to the next level.`, 10, 58);
 }
 
 function keyPressed() {
@@ -98,4 +99,9 @@ function keyPressed() {
     player.tryJump();
   }
   if (key === "r" || key === "R") loadLevel(levelIndex);
+
+  if (key === "n" || key === "N") {
+    levelIndex = (levelIndex + 1) % allLevelsData.levels.length;
+    loadLevel(levelIndex);
+  }
 }
