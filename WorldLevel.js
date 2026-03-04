@@ -33,7 +33,10 @@ class WorldLevel {
       (p) => new Platform(p.x, p.y, p.w, p.h),
     );
 
-    // Color balls — generated with a for loop, evenly spaced across the world
+    // Obstacles
+    this.obstacles = (levelJson.obstacles ?? []).map(
+      (o) => new Obstacle(o.x, o.y, o.w, o.h, o.type),
+    );
     this.balls = [];
     if (levelJson.colorBalls) {
       const cfg = levelJson.colorBalls;
@@ -53,6 +56,11 @@ class WorldLevel {
         });
       }
     }
+  }
+
+  allBallsCollected() {
+    // Return true if there are no balls OR all balls are collected
+    return this.balls.length === 0 || this.balls.every((b) => b.collected);
   }
 
   drawBalls(t) {
@@ -96,5 +104,11 @@ class WorldLevel {
     line(cx - size * 0.4, cy, cx - size * 0.1, cy + size * 0.4);
     line(cx - size * 0.1, cy + size * 0.4, cx + size * 0.5, cy - size * 0.3);
     pop();
+  }
+
+  drawObstacles() {
+    for (const o of this.obstacles) {
+      o.draw();
+    }
   }
 }

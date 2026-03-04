@@ -72,6 +72,7 @@ function draw() {
   level.drawWorld();
   level.drawBalls(frameCount * 0.05); // pass time for floating animation
   level.drawFinish(); // draw the checkmark
+  level.drawObstacles(); // draw obstacles
 
   // Check if player touched any uncollected ball
   for (const b of level.balls) {
@@ -84,12 +85,21 @@ function draw() {
     }
   }
 
+  // Check if player touched any obstacle
+  for (const o of level.obstacles) {
+    const obstacleBox = { x: o.x, y: o.y, w: o.w, h: o.h };
+    if (BlobPlayer.overlap(player.getBox(), obstacleBox)) {
+      loadLevel(levelIndex); // restart level
+      return;
+    }
+  }
+
   // Check if player touched the finish checkpoint
   const finishX = level.finish.x + level.finish.w / 2;
   const finishY = level.finish.y + level.finish.h / 2;
   const finishDist = dist(player.x, player.y, finishX, finishY);
   const finishRadius = Math.max(level.finish.w, level.finish.h) / 2;
-  if (finishDist < player.r + finishRadius) {
+  if (finishDist < player.r + finishRadius && level.allBallsCollected()) {
     levelIndex = (levelIndex + 1) % allLevelsData.levels.length;
     loadLevel(levelIndex);
     cam.begin(); // restart camera after level load

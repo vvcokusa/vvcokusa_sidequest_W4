@@ -45,6 +45,15 @@ class BlobPlayer {
     }
   }
 
+  getBox() {
+    return {
+      x: this.x - this.r,
+      y: this.y - this.r,
+      w: this.r * 2,
+      h: this.r * 2,
+    };
+  }
+
   update(level) {
     // input
     let move = 0;
