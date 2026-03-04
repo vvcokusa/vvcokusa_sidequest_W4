@@ -20,7 +20,13 @@ class WorldLevel {
     this.deathY = levelJson.world?.deathY ?? this.h + 200;
 
     // Start
-    this.start = Object.assign({ x: 80, y: 220, r: 26 }, levelJson.start ?? {});
+    this.start = Object.assign(
+      { x: 170, y: 220, r: 26 },
+      levelJson.start ?? {},
+    );
+
+    // Finish (checkpoint to advance to next level)
+    this.finish = levelJson.finish ?? { x: 0, y: 0, w: 40, h: 80 };
 
     // Platforms
     this.platforms = (levelJson.platforms ?? []).map(
@@ -71,6 +77,24 @@ class WorldLevel {
     fill(this.theme.platform);
 
     for (const p of this.platforms) rect(p.x, p.y, p.w, p.h); // x,y = top-left [web:234]
+    pop();
+  }
+
+  drawFinish() {
+    // Draw checkmark at finish location
+    push();
+    noFill();
+    stroke(0);
+    strokeWeight(3);
+
+    // Draw a checkmark symbol
+    const cx = this.finish.x + this.finish.w / 2;
+    const cy = this.finish.y + this.finish.h / 2;
+    const size = this.finish.w / 3;
+
+    // Checkmark: small line + long line
+    line(cx - size * 0.4, cy, cx - size * 0.1, cy + size * 0.4);
+    line(cx - size * 0.1, cy + size * 0.4, cx + size * 0.5, cy - size * 0.3);
     pop();
   }
 }

@@ -16,7 +16,7 @@ Learning goals:
 - Explore scalable project architecture for larger games
 */
 
-const VIEW_W = 800;
+const VIEW_W = 700;
 const VIEW_H = 480;
 
 let allLevelsData;
@@ -71,6 +71,7 @@ function draw() {
   cam.begin();
   level.drawWorld();
   level.drawBalls(frameCount * 0.05); // pass time for floating animation
+  level.drawFinish(); // draw the checkmark
 
   // Check if player touched any uncollected ball
   for (const b of level.balls) {
@@ -81,6 +82,17 @@ function draw() {
         playerColor = b.col; // change blob to ball's colour
       }
     }
+  }
+
+  // Check if player touched the finish checkpoint
+  const finishX = level.finish.x + level.finish.w / 2;
+  const finishY = level.finish.y + level.finish.h / 2;
+  const finishDist = dist(player.x, player.y, finishX, finishY);
+  const finishRadius = Math.max(level.finish.w, level.finish.h) / 2;
+  if (finishDist < player.r + finishRadius) {
+    levelIndex = (levelIndex + 1) % allLevelsData.levels.length;
+    loadLevel(levelIndex);
+    cam.begin(); // restart camera after level load
   }
 
   player.draw(playerColor);
